@@ -35,10 +35,17 @@ th, td {
     border-bottom: 1px solid #ddd;
 }
 
+.centerCell {
+    text-align: center;
+    vertical-align: middle;
+    width: 40px;
+}
+
 input {
     width: 100%;
     padding: 6px;
     font-size: 14px;
+    box-sizing: border-box;
 }
 
 button {
@@ -49,6 +56,7 @@ button {
     background: #1976d2;
     color: white;
     font-size: 14px;
+    cursor: pointer;
 }
 
 button:hover {
@@ -57,10 +65,17 @@ button:hover {
 
 .stopwatch {
     background: #555;
+    padding: 6px 10px;
+    margin: 0;
+}
+
+.stopwatch:hover {
+    background: #333;
 }
 
 .totalCell {
     font-weight: bold;
+    text-align: center;
 }
 
 #grandTotal {
@@ -87,18 +102,9 @@ button:hover {
     cursor: pointer;
     color: red;
     font-weight: bold;
+    font-size: 18px;
 }
 
-/* Center stopwatch buttons in their table cells */
-td:has(.stopwatch) {
-    text-align: center;
-    vertical-align: middle;
-}
-
-.stopwatch {
-    display: inline-block;
-    margin: 0 auto;
-}    
 </style>
 
 </head>
@@ -159,21 +165,29 @@ function addRow() {
 
 let row = tbody.insertRow();
 
-row.insertCell().innerHTML =
+let cell1 = row.insertCell();
+cell1.className = "centerCell";
+cell1.innerHTML =
 '<button class="stopwatch" onclick="fillTime(this)">⏱</button>';
 
-row.insertCell().innerHTML =
+let cell2 = row.insertCell();
+cell2.innerHTML =
 '<input onblur="calculate()">';
 
-row.insertCell().innerHTML =
+let cell3 = row.insertCell();
+cell3.className = "centerCell";
+cell3.innerHTML =
 '<button class="stopwatch" onclick="fillTime(this)">⏱</button>';
 
-row.insertCell().innerHTML =
+let cell4 = row.insertCell();
+cell4.innerHTML =
 '<input onblur="calculate()">';
 
-row.insertCell().className="totalCell";
+let cell5 = row.insertCell();
+cell5.className = "totalCell";
 
-row.insertCell().innerHTML='<input>';
+let cell6 = row.insertCell();
+cell6.innerHTML='<input>';
 
 }
 
@@ -183,7 +197,7 @@ for(let i=0;i<10;i++) addRow();
 
 function fillTime(btn){
 
-let input=btn.parentElement.nextElementSibling.querySelector("input");
+let input = btn.parentElement.nextElementSibling.querySelector("input");
 
 if(input.value!="") return;
 
@@ -305,4 +319,6 @@ add10();
 
 </body>
 </html>
+
+
 
