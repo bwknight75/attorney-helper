@@ -172,7 +172,7 @@ cell1.innerHTML =
 
 let cell2 = row.insertCell();
 cell2.innerHTML =
-'<input onblur="calculate()">';
+'<input onblur="normalizeInput(this)">';
 
 let cell3 = row.insertCell();
 cell3.className = "centerCell";
@@ -181,7 +181,7 @@ cell3.innerHTML =
 
 let cell4 = row.insertCell();
 cell4.innerHTML =
-'<input onblur="calculate()">';
+'<input onblur="normalizeInput(this)">';
 
 let cell5 = row.insertCell();
 cell5.className = "totalCell";
@@ -300,6 +300,38 @@ return hours*60 + minutes;
 
 }
 
+function formatTime(minutes){
+
+if(minutes == null) return "";
+
+let h = Math.floor(minutes / 60);
+let m = minutes % 60;
+
+let ampm = h >= 12 ? "PM" : "AM";
+
+h = h % 12;
+if(h == 0) h = 12;
+
+let mm = m.toString().padStart(2,"0");
+
+return h + ":" + mm + " " + ampm;
+
+}
+
+function normalizeInput(input){
+
+let minutes = parseTime(input.value);
+
+if(minutes != null){
+
+input.value = formatTime(minutes);
+
+}
+
+calculate();
+
+}
+
 
 function calculate(){
 
@@ -383,6 +415,7 @@ add10();
 
 </body>
 </html>
+
 
 
 
