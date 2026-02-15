@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Attorney Helper - Billable Time</title>
+
+<style>
+
+body {
+    font-family: -apple-system, Segoe UI, Arial;
+    background: #f4f6f8;
+    margin: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+h1 {
+    margin-top: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 6px;
+    border-bottom: 1px solid #ddd;
+}
+
+input {
+    width: 100%;
+    padding: 6px;
+    font-size: 14px;
+}
+
+button {
+    padding: 8px 14px;
+    margin: 4px;
+    border: none;
+    border-radius: 6px;
+    background: #1976d2;
+    color: white;
+    font-size: 14px;
+}
+
+button:hover {
+    background: #125ca1;
+}
+
+.stopwatch {
+    background: #555;
+}
+
+.totalCell {
+    font-weight: bold;
+}
+
+#grandTotal {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    width: 500px;
+    max-width: 90%;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.3);
+}
+
+.popupClose {
+    float: right;
+    cursor: pointer;
+    color: red;
+    font-weight: bold;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>Billable Time Calculator</h1>
+
+<table id="table">
+<thead>
+<tr>
+<th></th>
+<th>Start</th>
+<th></th>
+<th>End</th>
+<th>Total</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<br>
+
+<button onclick="addRow()">Add Row</button>
+<button onclick="add10()">Add 10 Rows</button>
+<button onclick="clearAll()">Clear All</button>
+<button onclick="exportExcel()">Export to Excel</button>
+<button onclick="showHelp()">How to Use</button>
+
+<div id="grandTotal">Grand Total: 0.0</div>
+
+</div>
+
+<div id="helpPopup" class="popup" style="display:none;">
+<span class="popupClose" onclick="hideHelp()">X</span>
+
+<p>
+To use this program, type a start time in the left column, and an end time in the right column; remember to include "AM" or "PM".
+Or, you can click the stopwatch icon next to any entry box and it will fill that box with the current computer clock time.
+The program will calculate the total elapsed time for each entry and all entries combined, rounding up in 6 minute intervals.
+Enter any notes you would like in the "Notes" column boxes.
+If you run out of time entry boxes, you can click "Add Row" or "Add 10 Rows".
+Clicking "Clear All" will remove all data.
+Click "Export to Excel" to create a .xlsx Excel file containing all times and notes.
+</p>
+
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+<script>
+
+let tbody = document.querySelector("#table tbody");
+
+function addRow() {
+
+let row = tbody.insertRow();
+
+row.insertCell().innerHTML =
+'<button class="stopwatch" onclick="fillTime(this)">⏱</button>';
+
+row.insertCell().innerHTML =
+'<input onblur="calculate()">';
+
+row.insertCell().innerHTML =
+'<button class="stopwatch" onclick="fillTime(this)">⏱</button>';
+
+row.insertCell().innerHTML =
+'<input onblur="calculate()">';
+
+row.insertCell().className="totalCell";
+
+row.insertCell().innerHTML='<input>';
+
+}
+
+function add10() {
+for(let i=0;i<10;i++) addRow();
+}
+
+function fillTime(btn){
+
+let input=btn.parentElement.nextElementSibling.querySelector("input");
+
+if(input.value!="") return;
+
+let now=new Date();
+
+let h=now.getHours();
+let m=now.getMinutes();
+
+let ampm=h>=12?"PM":"AM";
+
+h=h%12;
+if(h==0)h=12;
+
+if(m<10)m="0"+m;
+
+input.value=h+":"+m+ampm;
+
+calculate();
+
+}
+
+function parseTime(str){
+
+str=str.trim().toUpperCase().replace(" ","");
+
+let match=str.match(/(\d+):(\d+)(AM|PM)/);
+
+if(!match) return null;
+
+let h=parseInt(match[1]);
+let m=parseInt(match[2]);
+
+if(match[3]=="PM" && h!=12)h+=12;
+if(match[3]=="AM" && h==12)h=0;
+
+return h*60+m;
+
+}
+
+function calculate(){
+
+let totalTenths=0;
+
+for(let row of tbody.rows){
+
+let s=parseTime(row.cells[1].querySelector("input").value);
+let e=parseTime(row.cells[3].querySelector("input").value);
+
+let cell=row.cells[4];
+
+if(s!=null && e!=null){
+
+let minutes=e-s;
+
+if(minutes<0)minutes+=1440;
+
+let tenths=Math.ceil(minutes/6);
+
+cell.innerText=(tenths/10).toFixed(1);
+
+totalTenths+=tenths;
+
+}else{
+
+cell.innerText="";
+
+}
+
+}
+
+document.getElementById("grandTotal").innerText=
+"Grand Total: "+(totalTenths/10).toFixed(1);
+
+}
+
+function clearAll(){
+
+tbody.innerHTML="";
+add10();
+calculate();
+
+}
+
+function exportExcel(){
+
+let data=[["Start","End","Total","Notes"]];
+
+for(let row of tbody.rows){
+
+let start=row.cells[1].querySelector("input").value;
+let end=row.cells[3].querySelector("input").value;
+let total=row.cells[4].innerText;
+let notes=row.cells[5].querySelector("input").value;
+
+data.push([start,end,total,notes]);
+
+}
+
+let ws=XLSX.utils.aoa_to_sheet(data);
+
+let wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Billable Time");
+
+XLSX.writeFile(wb,"BillableTime.xlsx");
+
+}
+
+function showHelp(){
+document.getElementById("helpPopup").style.display="block";
+}
+
+function hideHelp(){
+document.getElementById("helpPopup").style.display="none";
+}
+
+add10();
+
+</script>
+
+</body>
+</html>
